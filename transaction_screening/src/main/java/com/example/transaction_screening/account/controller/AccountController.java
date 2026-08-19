@@ -1,8 +1,10 @@
 package com.example.transaction_screening.account.controller;
 
 import javax.management.RuntimeErrorException;
-
+import java.util.*;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -71,5 +73,81 @@ public class AccountController {
 
         } 
     }
+
+    
+    @GetMapping("/{id}")
+    public AccountResponse getAccountById(@PathVariable Long id){
+            log.info(
+            "GET /api/accounts/{}",
+            id
+    );
+
+    try{
+        return accountService.getAccountById(id);
+
+        
+    }
+    catch(Exception e){
+         log.error(
+                "Failed to fetch account ID: {}. Error: {}",
+                id,
+                e.getMessage(),
+                e
+        );
+
+        throw e;
+    }
+    }
+    
+    @GetMapping("/number/{accountNumber}")
+    public AccountResponse getAccountByNumber(@PathVariable String accountNumber){
+
+         log.info(
+            "GET /api/accounts/number/{}",
+            accountNumber
+    );
+
+     try {
+
+        return accountService.getAccountByNumber(accountNumber);
+
+    } catch (RuntimeException e) {
+
+        log.error(
+                "Failed to fetch account number: {}. Error: {}",
+                accountNumber,
+                e.getMessage(),
+                e
+        );
+
+        throw e;
+    }
+
+          
+    }
+    
+    @GetMapping("/customer/{customerId}")
+    public List<AccountResponse> getAccountByCustomerId(@PathVariable Long customerId){
+
+        log.info("GET /api/accounts/customer/{}" , customerId);
+
+        try{
+              return accountService.getAccountByCustomerId(customerId);
+
+        }
+        catch(RuntimeException e){
+              log.error(
+                "Failed to fetch accounts for customer ID: {}. Error: {}",
+                customerId,
+                e.getMessage(),
+                e
+        );
+
+        throw e;
+        }
+         
+    }
+
+
 
 }
