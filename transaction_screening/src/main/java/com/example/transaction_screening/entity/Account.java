@@ -2,6 +2,7 @@ package com.example.transaction_screening.entity;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 
 import org.hibernate.annotations.ManyToAny;
 import lombok.Data;
@@ -18,6 +19,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import java.util.*;
 
 @Entity
 @Data
@@ -52,7 +54,19 @@ public class Account {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id" ,nullable = false)
     private Customer customer;
+   
 
+     @OneToMany(
+            mappedBy = "senderAccount",
+            fetch = FetchType.LAZY
+    )
+    private List<Transaction> sentTransactions = new ArrayList<>();
+
+    @OneToMany(
+            mappedBy = "receiverAccount",
+            fetch = FetchType.LAZY
+    )
+    private List<Transaction> receivedTransactions = new ArrayList<>();
 
 
 }

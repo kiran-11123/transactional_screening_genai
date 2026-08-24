@@ -3,6 +3,7 @@ package com.example.transaction_screening.controller.transaction;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,8 +25,8 @@ public class TransactionController {
     public TransactionController(TransactionService transactionService){
          this.transactionService = transactionService; 
     }
-
-
+   
+    @PostMapping
     public ResponseEntity<ApiResponse<TransactionResponse>> createTransaction(@Valid @RequestBody TransactionRequest request){
           
           log.info(

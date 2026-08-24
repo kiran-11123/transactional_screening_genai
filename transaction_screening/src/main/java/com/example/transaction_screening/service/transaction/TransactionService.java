@@ -1,42 +1,79 @@
 package com.example.transaction_screening.service.transaction;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import com.example.transaction_screening.dto.transaction.TransactionRequest;
 import com.example.transaction_screening.dto.transaction.TransactionResponse;
+import com.example.transaction_screening.entity.Account;
 import com.example.transaction_screening.entity.Transaction;
 import com.example.transaction_screening.entity.TransactionStatus;
+import com.example.transaction_screening.exception.account.AccountNotFoundException;
 import com.example.transaction_screening.exception.transaction.TransactionNotFound;
+import com.example.transaction_screening.repository.AccountRepository;
 import com.example.transaction_screening.repository.TransactionRepository;
 
 import lombok.extern.slf4j.Slf4j;
-
-import java.time.LocalDateTime;
-import java.util.*;
-
 
 @Service
 @Slf4j
 public class TransactionService {
 
     private final TransactionRepository transactionRepository;
+    private final AccountRepository accountRepository;
 
-    public TransactionService(TransactionRepository transactionRepository){
+    public TransactionService(
+            TransactionRepository transactionRepository,
+            AccountRepository accountRepository) {
+
         this.transactionRepository = transactionRepository;
-    } 
+        this.accountRepository = accountRepository;
+    }
 
+    // CREATE TRANSACTION
+    public TransactionResponse createTransaction(
+            TransactionRequest request) {
 
-   
-    public TransactionResponse createTransaction( TransactionRequest request){
-         
-          log.info(
+        log.info(
                 "Creating transaction from account {} to account {}",
                 request.getSenderAccountId(),
                 request.getReceiverAccountId()
         );
-        try{
 
-            Transaction transaction  = Transaction.builder().senderAccountId(request.getSenderAccountId()).receiverAccountId(request.getReceiverAccountId()).amount(request.getAmount()).createdAt(LocalDateTime.now()).status(TransactionStatus.PENDING).build();
+        try {
+
+            // Find sender account
+            Account senderAccount = accountRepository
+                    .findById(request.getSenderAccountId())
+                    .orElseThrow(() ->
+                            new AccountNotFoundException(
+                                    "Sender account not found: "
+                                            + request.getSenderAccountId()
+                            )
+                    );
+
+            // Find receiver account
+            Account receiverAccount = accountRepository
+                    .findById(request.getReceiverAccountId())
+                    .orElseThrow(() ->
+                            new AccountNotFoundException(
+                                    "Receiver account not found: "
+                                            + request.getReceiverAccountId()
+                            )
+                    );
+
+            // Create transaction
+            Transaction transaction = Transaction.builder()
+                    .senderAccount(senderAccount)
+                    .receiverAccount(receiverAccount)
+                    .amount(request.getAmount())
+                    .createdAt(LocalDateTime.now())
+                    .status(TransactionStatus.PENDING)
+                    .build();
+
+            // Save transaction
             Transaction savedTransaction =
                     transactionRepository.save(transaction);
 
@@ -46,11 +83,21 @@ public class TransactionService {
             );
 
             return mapToResponse(savedTransaction);
-        }
-        catch (Exception e) {
+
+        } catch (RuntimeException e) {
 
             log.error(
-                    "Error while creating transaction",
+                    "Error while creating transaction: {}",
+                    e.getMessage(),
+                    e
+            );
+
+            throw e;
+
+        } catch (Exception e) {
+
+            log.error(
+                    "Unexpected error while creating transaction",
                     e
             );
 
@@ -59,29 +106,32 @@ public class TransactionService {
                     e
             );
         }
-                 
     }
 
+    // GET TRANSACTION BY ID
+    public TransactionResponse getTransactionById(Long id) {
 
-    public TransactionResponse getTransactionById(Long id){
-        
-         log.info(
+        log.info(
                 "Fetching transaction with id: {}",
                 id
         );
-        try{
 
-            Transaction transaction = transactionRepository.findById(id).orElseThrow(()->
-        new TransactionNotFound("Transaction with id: "
+        try {
+
+            Transaction transaction =
+                    transactionRepository
+                            .findById(id)
+                            .orElseThrow(() ->
+                                    new TransactionNotFound(
+                                            "Transaction with id: "
                                                     + id
-                                                    + " not found"));
+                                                    + " not found"
+                                    )
+                            );
 
+            return mapToResponse(transaction);
 
-                        return mapToResponse(transaction);
-
-
-        }
-        catch (RuntimeException e) {
+        } catch (RuntimeException e) {
 
             log.error(
                     "Error while fetching transaction with id {}: {}",
@@ -91,9 +141,9 @@ public class TransactionService {
 
             throw e;
 
-        }
-        catch(Exception e){
-               log.error(
+        } catch (Exception e) {
+
+            log.error(
                     "Unexpected error while fetching transaction {}",
                     id,
                     e
@@ -106,17 +156,22 @@ public class TransactionService {
         }
     }
 
-    public List<TransactionResponse> getAllTransactions(){
-         log.info("Fetching all transactions");
+   
+    public List<TransactionResponse> getAllTransactions() {
 
-         try{
+        log.info("Fetching all transactions");
 
-           return  transactionRepository.findAll().stream().map(this :: mapToResponse).toList();
+        try {
 
-         }
-         catch(Exception e){
+            return transactionRepository
+                    .findAll()
+                    .stream()
+                    .map(this::mapToResponse)
+                    .toList();
 
-             log.error(
+        } catch (Exception e) {
+
+            log.error(
                     "Error while fetching all transactions",
                     e
             );
@@ -125,13 +180,34 @@ public class TransactionService {
                     "Unable to fetch transactions",
                     e
             );
-
-         }
+        }
     }
 
+    
+    private TransactionResponse mapToResponse(
+            Transaction transaction) {
 
-    public TransactionResponse mapToResponse(Transaction transaction){
-        return TransactionResponse.builder().id(transaction.getId()).amount(transaction.getAmount()).createdAt(transaction.getCreatedAt()).senderAccountId(transaction.getSenderAccountId()).receiverAccountId(transaction.getReceiverAccountId()).status(transaction.getStatus()).build();
+        return TransactionResponse.builder()
+                .id(transaction.getId())
+
+                .senderAccountId(
+                        transaction
+                                .getSenderAccount()
+                                .getId()
+                )
+
+                .receiverAccountId(
+                        transaction
+                                .getReceiverAccount()
+                                .getId()
+                )
+
+                .amount(transaction.getAmount())
+
+                .status(transaction.getStatus())
+
+                .createdAt(transaction.getCreatedAt())
+
+                .build();
     }
-
 }
