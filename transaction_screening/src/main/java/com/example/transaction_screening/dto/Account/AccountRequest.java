@@ -2,21 +2,30 @@ package com.example.transaction_screening.dto.Account;
 
 import java.math.BigDecimal;
 
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class AccountRequest {
     
-    @NotBlank(message = "Account number is required")
+  
     private String accountNumber;
     
-    @NotBlank(message = "Balance is required")
-    @Positive(message =  "Balance must be greater than zero")
+   @NotNull(message = "Balance is required")
+    @DecimalMin(
+        value = "0.0",
+        inclusive = false,
+        message = "Balance must be greater than zero"
+    )
     private BigDecimal balance;
    
     @NotBlank(message = "currency is required")

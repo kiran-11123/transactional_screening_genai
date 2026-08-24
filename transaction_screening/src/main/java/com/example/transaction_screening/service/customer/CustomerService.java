@@ -39,7 +39,7 @@ public class CustomerService {
            
                        log.info("Customer created successfully with id: {}", savedCustomer.getId());
 
-           CustomerResponse response = CustomerResponse.builder().name(savedCustomer.getName()).email(savedCustomer.getEmail()).createdAt(savedCustomer.getCreatedAt()).build();
+           CustomerResponse response = CustomerResponse.builder().name(savedCustomer.getName()).email(savedCustomer.getEmail()).createdAt(savedCustomer.getCreatedAt()).id(savedCustomer.getId()).build();
 
            return response;
         
@@ -116,6 +116,7 @@ public class CustomerService {
                 .name(customer.getName())
                 .email(customer.getEmail())
                 .createdAt(customer.getCreatedAt())
+                .id(customer.getId())
                 .build();
     }
 

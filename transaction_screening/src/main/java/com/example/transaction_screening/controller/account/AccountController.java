@@ -39,6 +39,12 @@ public class AccountController {
                     request.getAccountNumber()
             );
 
+String accountNumber = UUID.randomUUID().toString();
+request.setAccountNumber(accountNumber);
+
+if(request.getAccountNumber()==null){
+     throw new RuntimeException("Account number should not be empty");
+}
             AccountResponse result = accountService.createAccount(request);
 
             ApiResponse<AccountResponse> response =  ApiResponse.<AccountResponse>builder().status(HttpStatus.CREATED.value())
