@@ -8,10 +8,11 @@ import com.example.transaction_screening.exception.account.AccountAlreadyExistsE
 import com.example.transaction_screening.exception.account.AccountNotFoundException;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
+import com.example.transaction_screening.exception.transaction.TransactionNotFound;
 import com.example.transaction_screening.dto.ApiResponse;
 
 @RestControllerAdvice
@@ -38,6 +39,7 @@ public class GlobalExceptionHandler  {
                 .body(response);
     }
     
+
     @ExceptionHandler(CustomerAlreadyExistsException.class)
     public ResponseEntity<ApiResponse<Void>> CustomerAlreadyExists(CustomerAlreadyExistsException e){
           
@@ -115,5 +117,16 @@ public ResponseEntity<ApiResponse<Void>> handleAccountAlreadyExists(
             .status(HttpStatus.CONFLICT)
             .body(response);
 }
+
+
+@ExceptionHandler(TransactionNotFound.class)
+public ResponseEntity<ApiResponse<Void>> handleTransactionNotFound(TransactionNotFound e){
+      log.error("Transaction not found");
+
+    ApiResponse<Void> response = ApiResponse.<Void>builder().status(HttpStatus.NOT_FOUND.value()).message(e.getMessage()).data(null).build();
+
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+
+} 
 
 }
