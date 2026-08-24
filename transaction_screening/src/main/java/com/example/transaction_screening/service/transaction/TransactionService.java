@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.transaction_screening.dto.transaction.TransactionRequest;
 import com.example.transaction_screening.dto.transaction.TransactionResponse;
@@ -11,6 +12,7 @@ import com.example.transaction_screening.entity.Account;
 import com.example.transaction_screening.entity.Transaction;
 import com.example.transaction_screening.entity.TransactionStatus;
 import com.example.transaction_screening.exception.account.AccountNotFoundException;
+import com.example.transaction_screening.exception.transaction.InsufficientBalanceException;
 import com.example.transaction_screening.exception.transaction.TransactionNotFound;
 import com.example.transaction_screening.repository.AccountRepository;
 import com.example.transaction_screening.repository.TransactionRepository;
@@ -33,6 +35,7 @@ public class TransactionService {
     }
 
     // CREATE TRANSACTION
+    @Transactional
     public TransactionResponse createTransaction(
             TransactionRequest request) {
 
@@ -64,13 +67,32 @@ public class TransactionService {
                             )
                     );
 
+            if (senderAccount.getId().equals(receiverAccount.getId())) {
+            throw new RuntimeException(
+                    "Sender and receiver accounts cannot be the same"
+            );
+        }
+          
+        if(senderAccount.getBalance().compareTo(request.getAmount()) < 0){
+             throw new InsufficientBalanceException(
+                    "Insufficient balance in sender account"
+            );
+        }
+
+        senderAccount.setBalance(senderAccount.getBalance().subtract(request.getAmount()));
+
+        receiverAccount.setBalance(receiverAccount.getBalance().add(request.getAmount()));
+
+        accountRepository.save(senderAccount);
+        accountRepository.save(receiverAccount);
+
             // Create transaction
             Transaction transaction = Transaction.builder()
                     .senderAccount(senderAccount)
                     .receiverAccount(receiverAccount)
                     .amount(request.getAmount())
                     .createdAt(LocalDateTime.now())
-                    .status(TransactionStatus.PENDING)
+                    .status(TransactionStatus.COMPLETED)
                     .build();
 
             // Save transaction

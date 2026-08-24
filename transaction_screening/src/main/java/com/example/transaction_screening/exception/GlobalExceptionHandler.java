@@ -4,9 +4,11 @@ import com.example.transaction_screening.exception.customer.CustomerNotFoundExce
 
 import lombok.extern.slf4j.Slf4j;
 
+import com.example.transaction_screening.exception.user.InvalidCredentialsException;
+import com.example.transaction_screening.exception.user.UserAlreadyExistsException;
 import com.example.transaction_screening.exception.account.AccountAlreadyExistsException;
 import com.example.transaction_screening.exception.account.AccountNotFoundException;
-
+import com.example.transaction_screening.exception.transaction.InsufficientBalanceException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -128,5 +130,66 @@ public ResponseEntity<ApiResponse<Void>> handleTransactionNotFound(TransactionNo
       return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 
 } 
+
+
+  @ExceptionHandler(InsufficientBalanceException.class)
+    public ResponseEntity<ApiResponse<Void>> handleInsufficientBalance(InsufficientBalanceException e){
+          log.error(
+                "Customer not found: {}",
+                e.getMessage()
+        );
+         
+         ApiResponse<Void> response =
+                ApiResponse.<Void>builder()
+                        .status(HttpStatus.BAD_REQUEST.value())
+                        .message(e.getMessage())
+                        .data(null)
+                        .build();
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(response);
+    }
+
+
+     @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<ApiResponse<Void>> InvalidCredentails(InvalidCredentialsException e){
+          log.error(
+                "Customer not found: {}",
+                e.getMessage()
+        );
+         
+         ApiResponse<Void> response =
+                ApiResponse.<Void>builder()
+                        .status(HttpStatus.BAD_REQUEST.value())
+                        .message(e.getMessage())
+                        .data(null)
+                        .build();
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(response);
+    }
+
+     @ExceptionHandler(UserAlreadyExistsException.class)
+    public ResponseEntity<ApiResponse<Void>> userAlreadyExists(UserAlreadyExistsException e){
+          log.error(
+                "Customer not found: {}",
+                e.getMessage()
+        );
+         
+         ApiResponse<Void> response =
+                ApiResponse.<Void>builder()
+                        .status(HttpStatus.BAD_REQUEST.value())
+                        .message(e.getMessage())
+                        .data(null)
+                        .build();
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(response);
+    }
+
+
 
 }
