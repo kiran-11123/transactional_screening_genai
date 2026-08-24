@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 
 import org.springframework.stereotype.Service;
 import com.example.transaction_screening.entity.Customer;
+import com.example.transaction_screening.exception.customer.CustomerAlreadyExistsException;
+import com.example.transaction_screening.exception.customer.CustomerNotFoundException;
 import com.example.transaction_screening.dto.Customer.CustomerRequest;
 import com.example.transaction_screening.dto.Customer.CustomerResponse;
 import com.example.transaction_screening.repository.CustomerRepository;
@@ -29,7 +31,7 @@ public class CustomerService {
          try{
 
             if(customerRepository.existsByEmail(request.getEmail())){
-                  throw new RuntimeException("Customer already exists with email {}"+request.getEmail());
+                  throw new CustomerAlreadyExistsException("Customer already exists with email "+request.getEmail());
             }
 
            Customer customer = Customer.builder().name(request.getName()).email(request.getEmail()).phone(request.getPhone()).createdAt(LocalDateTime.now()).build();
@@ -42,12 +44,11 @@ public class CustomerService {
            return response;
         
 
-
          }
          catch(Exception e){
             log.error("Unexpected error while creating customer", e);
               
-            throw new RuntimeException("Error while Creating the customer {}" , e);
+            throw new RuntimeException("Error while Creating the customer " , e);
          }
          
     }
@@ -58,7 +59,7 @@ public class CustomerService {
           
          log.info("Fetching customer with id: {}", id);
          try{
-            Customer savedCustomer = customerRepository.findById(id).orElseThrow(()-> new RuntimeException("Customer with id: {}  not found"+id));
+            Customer savedCustomer = customerRepository.findById(id).orElseThrow(()-> new CustomerNotFoundException("Customer with id: {}  not found"+id));
             CustomerResponse response = CustomerResponse.builder().name(savedCustomer.getName()).email(savedCustomer.getEmail()).createdAt(savedCustomer.getCreatedAt()).build();
             
             return response;

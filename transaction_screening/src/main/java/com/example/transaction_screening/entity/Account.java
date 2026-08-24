@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import org.hibernate.annotations.ManyToAny;
+import lombok.Data;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -18,6 +19,7 @@ import jakarta.persistence.Table;
 import lombok.Builder;
 
 @Entity
+@Data
 @Builder
 @Table(name = "accounts")
 public class Account {
