@@ -128,17 +128,10 @@ public class AuthService {
             );
         }
 
-        // 3. Convert User to Spring Security UserDetails
-        UserDetails userDetails =
-                org.springframework.security.core.userdetails.User
-                        .builder()
-                        .username(user.getUsername())
-                        .password(user.getPassword())
-                        .roles(user.getRole().name())
-                        .build();
+     
 
         // 4. Generate JWT
-        String token = jwtService.generateToken(userDetails);
+        String token = jwtService.generateToken(user);
 
         log.info(
                 "Login successful for username: {}",

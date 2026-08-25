@@ -4,8 +4,6 @@ import java.io.IOException;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -15,19 +13,16 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
+@Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
-    private final UserDetailsService userDetailsService;
 
-    public JwtAuthenticationFilter(
-            JwtService jwtService,
-            UserDetailsService userDetailsService) {
-
+    public JwtAuthenticationFilter(JwtService jwtService) {
         this.jwtService = jwtService;
-        this.userDetailsService = userDetailsService;
     }
 
     @Override
@@ -37,33 +32,55 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             FilterChain filterChain)
             throws ServletException, IOException {
 
+        log.info("JWT FILTER CALLED: {}", request.getRequestURI());
+
         String token = extractTokenFromCookie(request);
 
         // No JWT cookie
         if (token == null) {
+
+            log.warn("JWT COOKIE NOT FOUND");
+
             filterChain.doFilter(request, response);
             return;
         }
 
+        log.info("JWT COOKIE FOUND");
+
         try {
 
             String username = jwtService.extractUsername(token);
+            String email = jwtService.extractEmail(token);
+            String role = jwtService.extractRole(token);
+
+            log.info("Username from JWT: {}", username);
+            log.info("Email from JWT: {}", email);
+            log.info("Role from JWT: {}", role);
 
             if (username != null
                     && SecurityContextHolder
                             .getContext()
                             .getAuthentication() == null) {
 
-                UserDetails userDetails =
-                        userDetailsService.loadUserByUsername(username);
+                boolean valid =
+                        jwtService.isTokenValid(token, username);
 
-                if (jwtService.isTokenValid(token, userDetails)) {
+                log.info("JWT VALID: {}", valid);
+
+                if (valid) {
+
+                    JwtPayloadDetails details =
+                            new JwtPayloadDetails(
+                                    email,
+                                    username,
+                                    role
+                            );
 
                     UsernamePasswordAuthenticationToken authentication =
                             new UsernamePasswordAuthenticationToken(
-                                    userDetails,
+                                    details,
                                     null,
-                                    userDetails.getAuthorities()
+                                    details.getAuthorities()
                             );
 
                     authentication.setDetails(
@@ -74,27 +91,45 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     SecurityContextHolder
                             .getContext()
                             .setAuthentication(authentication);
+
+                    log.info(
+                            "Authentication successfully created for user: {}",
+                            username
+                    );
                 }
             }
 
         } catch (Exception e) {
 
-            // Invalid or expired JWT
-            // Request will remain unauthenticated
+            log.error("JWT authentication failed", e);
+
+            SecurityContextHolder.clearContext();
         }
 
         filterChain.doFilter(request, response);
     }
 
-    private String extractTokenFromCookie(HttpServletRequest request) {
+    private String extractTokenFromCookie(
+            HttpServletRequest request) {
 
-        if (request.getCookies() == null) {
+        Cookie[] cookies = request.getCookies();
+
+        if (cookies == null) {
+
+            log.warn("Request contains no cookies");
+
             return null;
         }
 
-        for (Cookie cookie : request.getCookies()) {
+        for (Cookie cookie : cookies) {
+
+            log.info(
+                    "Cookie received: {}",
+                    cookie.getName()
+            );
 
             if ("jwt".equals(cookie.getName())) {
+
                 return cookie.getValue();
             }
         }

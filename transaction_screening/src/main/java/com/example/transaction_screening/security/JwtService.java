@@ -7,7 +7,7 @@ import java.util.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-
+import com.example.transaction_screening.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -28,13 +28,15 @@ public class JwtService {
         );
     }
 
-     public String generateToken(UserDetails userDetails) {
+          public String generateToken(User user) {
 
-        Map<String, Object> claims = new HashMap<>();
+      
+                 
 
         return Jwts.builder()
-                .claims(claims)
-                .subject(userDetails.getUsername())
+                .subject(user.getUsername())
+                .claim("email", user.getEmail())
+                .claim("role",user.getRole())
                 .issuedAt(new Date())
                 .expiration(
                         new Date(System.currentTimeMillis() + expiration)
@@ -48,6 +50,16 @@ public class JwtService {
         return extractAllClaims(token)
                 .getSubject();
     }
+
+        public String extractEmail(String token) {
+
+                return extractAllClaims(token)
+                                .get("email", String.class);
+        }
+
+        public String extractRole(String token){
+             return extractAllClaims(token).get("role" , String.class);
+        }
 
       private Claims extractAllClaims(String token) {
 
@@ -68,12 +80,12 @@ public class JwtService {
     // Validate token
     public boolean isTokenValid(
             String token,
-            UserDetails userDetails
+            String username_e
     ) {
 
         String username = extractUsername(token);
 
-        return username.equals(userDetails.getUsername())
+        return username.equals(username_e)
                 && !isTokenExpired(token);
     }
 
