@@ -8,12 +8,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.transaction_screening.dto.ApiResponse;
+import com.example.transaction_screening.dto.user.LoginRequest;
 import com.example.transaction_screening.dto.user.RegisterRequest;
 import com.example.transaction_screening.dto.user.RegisterResponse;
 import com.example.transaction_screening.service.user.AuthService;
 
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import jakarta.servlet.http.Cookie;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -61,5 +64,31 @@ public class AuthController {
             throw e;
         }
     }
+
+
+   @PostMapping("/login")
+public ResponseEntity<ApiResponse<String>> login(
+        @Valid @RequestBody LoginRequest request,
+        HttpServletResponse response) {
+
+        String token = authService.loginService(request);
+
+    Cookie cookie = new Cookie("jwt", token);
+
+    cookie.setHttpOnly(true);
+    cookie.setSecure(false);
+    cookie.setPath("/");
+    cookie.setMaxAge(60 * 60);
+
+    response.addCookie(cookie);
+
+    return ResponseEntity.ok(
+            ApiResponse.<String>builder()
+                    .status(HttpStatus.OK.value())
+                    .message("Login successful")
+                    .data(null)
+                    .build()
+    );
+}
 
 }
