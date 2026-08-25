@@ -91,4 +91,26 @@ public ResponseEntity<ApiResponse<String>> login(
     );
 }
 
+@PostMapping("/logout")
+public ResponseEntity<ApiResponse<String>> logout(HttpServletResponse response){
+
+           log.info("User logout request received");
+           Cookie cookie = new Cookie("jwt", null);
+            cookie.setHttpOnly(true);
+        cookie.setSecure(false);
+        cookie.setPath("/");
+        cookie.setMaxAge(0);
+
+         response.addCookie(cookie);
+            return ResponseEntity.ok(
+                ApiResponse.<String>builder()
+                        .status(HttpStatus.OK.value())
+                        .message("Logout successful")
+                        .data(null)
+                        .build()
+        );
+
+          
+}
+
 }
