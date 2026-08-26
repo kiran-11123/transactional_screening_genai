@@ -55,11 +55,6 @@ private Long id;
     private LocalDateTime createdAt;
 
     
-     @OneToOne(
-        cascade = CascadeType.ALL,
-        orphanRemoval = true
-    )
-    @JoinColumn(name = "customer_id", unique = true)
-    private Customer customer;
+    
 
 }

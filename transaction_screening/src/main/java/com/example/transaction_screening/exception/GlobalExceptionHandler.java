@@ -1,6 +1,5 @@
 package com.example.transaction_screening.exception;
-import com.example.transaction_screening.exception.customer.CustomerAlreadyExistsException;
-import com.example.transaction_screening.exception.customer.CustomerNotFoundException;
+
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -21,42 +20,10 @@ import com.example.transaction_screening.dto.ApiResponse;
 @Slf4j
 public class GlobalExceptionHandler  {
 
-     
-    @ExceptionHandler(CustomerNotFoundException.class)
-    public ResponseEntity<ApiResponse<Void>> handleCustomerNotFound(CustomerNotFoundException e){
-          log.error(
-                "Customer not found: {}",
-                e.getMessage()
-        );
-         
-         ApiResponse<Void> response =
-                ApiResponse.<Void>builder()
-                        .status(HttpStatus.NOT_FOUND.value())
-                        .message(e.getMessage())
-                        .data(null)
-                        .build();
-
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(response);
-    }
+  
     
 
-    @ExceptionHandler(CustomerAlreadyExistsException.class)
-    public ResponseEntity<ApiResponse<Void>> CustomerAlreadyExists(CustomerAlreadyExistsException e){
-          
-          ApiResponse<Void> response =
-                ApiResponse.<Void>builder()
-                        .status(HttpStatus.CONFLICT.value())
-                        .message(e.getMessage())
-                        .data(null)
-                        .build();
-          
-                        return ResponseEntity
-                .status(HttpStatus.CONFLICT)
-                .body(response);
-    }
-
+  
      @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleGenericException(
             Exception e) {

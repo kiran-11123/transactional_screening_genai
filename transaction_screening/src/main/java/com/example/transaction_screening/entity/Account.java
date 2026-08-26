@@ -50,17 +50,7 @@ public class Account {
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
-    
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id" ,nullable = false)
-    private Customer customer;
    
-
-     @OneToMany(
-            mappedBy = "senderAccount",
-            fetch = FetchType.LAZY
-    )
-    private List<Transaction> sentTransactions = new ArrayList<>();
 
     @OneToMany(
             mappedBy = "receiverAccount",

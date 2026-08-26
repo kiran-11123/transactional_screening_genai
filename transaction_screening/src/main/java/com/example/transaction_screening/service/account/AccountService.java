@@ -8,12 +8,9 @@ import org.springframework.stereotype.Service;
 import com.example.transaction_screening.dto.Account.AccountRequest;
 import com.example.transaction_screening.dto.Account.AccountResponse;
 import com.example.transaction_screening.entity.Account;
-import com.example.transaction_screening.entity.Customer;
 import com.example.transaction_screening.exception.account.AccountAlreadyExistsException;
 import com.example.transaction_screening.exception.account.AccountNotFoundException;
-import com.example.transaction_screening.exception.customer.CustomerNotFoundException;
 import com.example.transaction_screening.repository.AccountRepository;
-import com.example.transaction_screening.repository.CustomerRepository;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -22,11 +19,9 @@ import lombok.extern.slf4j.Slf4j;
 public class AccountService {
      
     private final AccountRepository accountRepository;
-    private final CustomerRepository customerRepository;
 
-    public AccountService(AccountRepository accountRepository , CustomerRepository customerRepository){
+    public AccountService(AccountRepository accountRepository ){
         this.accountRepository = accountRepository;
-        this.customerRepository = customerRepository;
     }
 
 
@@ -44,11 +39,9 @@ public class AccountService {
             }
 
 
-            Customer customer = customerRepository.findById(request.getCustomerId()).orElseThrow(()-> new CustomerNotFoundException(  "Customer with id: "
-                                            + request.getCustomerId()
-                                            + " not found"));
             
-            Account account = Account.builder().accountNumber(request.getAccountNumber()).active(true).balance(request.getBalance()).createdAt(LocalDateTime.now()).currency(request.getCurrency()).customer(customer).build();
+            
+            Account account = Account.builder().accountNumber(request.getAccountNumber()).active(true).balance(request.getBalance()).createdAt(LocalDateTime.now()).currency(request.getCurrency()).build();
 
             Account savedAccount = accountRepository.save(account);
 
@@ -70,14 +63,7 @@ public class AccountService {
             throw e;
 
         }
-        catch(CustomerNotFoundException e){
-             log.error(
-                    "Customer not found while creating account: {}",
-                    e.getMessage()
-            );
-
-            throw e;
-        }
+        
         catch(Exception e){
              log.error(
                     "Unexpected error while creating account",
@@ -145,25 +131,11 @@ public class AccountService {
         
         try{
              
-            if(!customerRepository.existsById(customerId)){
-               throw new CustomerNotFoundException(
-                        "Customer with id: "
-                                + customerId
-                                + " not found"
-                );
-            }
+          
 
             return accountRepository.findByCustomerId(customerId).stream().map(this :: mapToResponse).toList();
         }
-        catch(CustomerNotFoundException e){
-              log.error(
-                    "Customer not found: {}",
-                    e.getMessage()
-            );
-
-            throw e;
-
-        }
+       
         catch(Exception e){
              log.error(
                     "Unexpected error while fetching accounts for customer {}",
@@ -184,7 +156,7 @@ public class AccountService {
 
     public AccountResponse mapToResponse(Account account){
 
-        return AccountResponse.builder().accountNumber(account.getAccountNumber()).active(account.isActive()).balance(account.getBalance()).createdAt(account.getCreatedAt()).currency(account.getCurrency()).customerId(account.getCustomer().getId()).id(account.getId()).build();
+        return AccountResponse.builder().accountNumber(account.getAccountNumber()).active(account.isActive()).balance(account.getBalance()).createdAt(account.getCreatedAt()).currency(account.getCurrency()).id(account.getId()).build();
 
 
     }
