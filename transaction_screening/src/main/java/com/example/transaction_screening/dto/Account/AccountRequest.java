@@ -30,6 +30,5 @@ public class AccountRequest {
     @NotBlank(message = "currency is required")
     private String currency;
 
-    @NotNull(message = "Customer ID is required")
-    private Long customerId;
+   
 }

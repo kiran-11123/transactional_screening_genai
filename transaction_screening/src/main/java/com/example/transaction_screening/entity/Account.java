@@ -2,7 +2,6 @@ package com.example.transaction_screening.entity;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 
 import org.hibernate.annotations.ManyToAny;
 import lombok.Data;
@@ -16,6 +15,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -36,6 +36,7 @@ public class Account {
 
     @Column(unique = true , nullable = false)
     private String accountNumber;
+
     
     @Column(nullable = false , precision = 19 ,scale = 2)
     private BigDecimal balance;
@@ -49,8 +50,9 @@ public class Account {
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
-
    
+    @OneToOne(mappedBy = "account")
+    private User user;
 
     @OneToMany(
             mappedBy = "receiverAccount",

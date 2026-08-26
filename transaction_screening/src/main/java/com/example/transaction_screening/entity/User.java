@@ -55,6 +55,14 @@ private Long id;
     private LocalDateTime createdAt;
 
     
+
+   @OneToOne(cascade = CascadeType.ALL)
+@JoinColumn(name = "account_id", unique = true)
+private Account account;
     
+
+@OneToOne(cascade = CascadeType.ALL)
+@JoinColumn(name = "address_id", unique = true)
+private Address address;
 
 }

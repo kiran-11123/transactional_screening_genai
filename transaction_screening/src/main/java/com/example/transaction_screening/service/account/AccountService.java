@@ -122,34 +122,7 @@ public class AccountService {
         }
     }
 
-    public List<AccountResponse> getAccountsByCustomerId(Long customerId){
 
-           log.info(
-                "Fetching accounts for customer id: {}",
-                customerId
-        );
-        
-        try{
-             
-          
-
-            return accountRepository.findByCustomerId(customerId).stream().map(this :: mapToResponse).toList();
-        }
-       
-        catch(Exception e){
-             log.error(
-                    "Unexpected error while fetching accounts for customer {}",
-                    customerId,
-                    e
-            );
-
-            throw new RuntimeException(
-                    "Unable to fetch accounts",
-                    e
-            );
-        }
-
-    }
      
 
 
