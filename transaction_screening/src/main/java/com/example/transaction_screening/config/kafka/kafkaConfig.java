@@ -3,14 +3,17 @@ package com.example.transaction_screening.config.kafka;
 import java.util.*;
 import org.springframework.kafka.support.serializer.JsonSerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
-
+import com.example.transaction_screening.dto.kafka.EmailRequest;
 import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.common.serialization.StringSerializer;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
-import com.example.transaction_screening.dto.kafka.EmailRequest;
+import org.springframework.kafka.support.serializer.JsonSerializer;
 
 @Configuration
 public class kafkaConfig {

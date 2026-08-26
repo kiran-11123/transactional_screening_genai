@@ -14,7 +14,10 @@ import com.example.transaction_screening.entity.User;
 import com.example.transaction_screening.entity.UserRole;
 import com.example.transaction_screening.exception.user.UserAlreadyExistsException;
 import com.example.transaction_screening.repository.UserRepository;
-
+import com.example.transaction_screening.service.kafka.SendEmailService;
+import java.util.UUID;
+import com.example.transaction_screening.dto.kafka.EmailRequest;
+import com.example.transaction_screening.dto.kafka.EmailResponse;
 @Service
 @Slf4j
 public class AuthService {
@@ -22,11 +25,13 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final SendEmailService sendEmailService;
 
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService){
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService , SendEmailService sendEmailService){
          this.userRepository=userRepository;
          this.passwordEncoder=passwordEncoder;
             this.jwtService=jwtService;
+            this.sendEmailService = sendEmailService;
     }
 
 
@@ -66,6 +71,18 @@ public class AuthService {
                     .build();
 
            User savedUser =  userRepository.save(user);
+
+                String idempotentKey = UUID.randomUUID().toString();
+
+                EmailRequest emailReq = EmailRequest.builder().email(savedUser.getEmail()).IdempotentKey(idempotentKey).build();
+
+                log.info("Sending the welcome email for : {} " , savedUser.getEmail());
+
+                EmailResponse response = sendEmailService.sendEmail(emailReq);
+                
+                log.info("Welcome email response is : ", response);
+
+          
 
             log.info(
                     "User registered successfully: {}",

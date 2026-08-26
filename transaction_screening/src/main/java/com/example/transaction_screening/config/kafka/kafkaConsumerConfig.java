@@ -44,7 +44,7 @@ public class kafkaConsumerConfig {
                 new JsonDeserializer<>(EmailRequest.class);
 
         jsonDeserializer.addTrustedPackages(
-            "com.example.email_kafka.dto"
+            "com.example.transaction_screening.dto.kafka"
         );
 
         return new DefaultKafkaConsumerFactory<>(
