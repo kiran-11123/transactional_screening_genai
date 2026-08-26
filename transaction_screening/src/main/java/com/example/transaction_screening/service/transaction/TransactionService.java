@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.transaction_screening.dto.kafka.TransactionEvent;
 import com.example.transaction_screening.dto.transaction.TransactionRequest;
 import com.example.transaction_screening.dto.transaction.TransactionResponse;
 import com.example.transaction_screening.entity.Account;
@@ -16,6 +17,7 @@ import com.example.transaction_screening.exception.transaction.InsufficientBalan
 import com.example.transaction_screening.exception.transaction.TransactionNotFound;
 import com.example.transaction_screening.repository.AccountRepository;
 import com.example.transaction_screening.repository.TransactionRepository;
+import com.example.transaction_screening.service.kafka.TransactionProducerService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -25,13 +27,15 @@ public class TransactionService {
 
     private final TransactionRepository transactionRepository;
     private final AccountRepository accountRepository;
+    private final TransactionProducerService transactionProducerService;
 
     public TransactionService(
             TransactionRepository transactionRepository,
-            AccountRepository accountRepository) {
+            AccountRepository accountRepository , TransactionProducerService transactionProducerService) {
 
         this.transactionRepository = transactionRepository;
         this.accountRepository = accountRepository;
+        this.transactionProducerService = transactionProducerService;
     }
 
     // CREATE TRANSACTION
@@ -98,6 +102,12 @@ public class TransactionService {
             // Save transaction
             Transaction savedTransaction =
                     transactionRepository.save(transaction);
+
+
+            TransactionEvent rEvent = TransactionEvent.builder().createdAt(savedTransaction.getCreatedAt()).amount(savedTransaction.getAmount()).receiverAccountId(savedTransaction.getReceiverAccount().getId()).senderAccountId(savedTransaction.getSenderAccount().getId()).status(savedTransaction.getStatus().name()).transactionId(savedTransaction.getId()).build();
+
+           log.info("Sending Transaction event to KafkaProducer {} ", rEvent.getTransactionId());
+           transactionProducerService.sendTransactionEvent(rEvent);
 
             log.info(
                     "Transaction created successfully with id: {}",

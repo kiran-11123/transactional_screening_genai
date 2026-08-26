@@ -61,6 +61,10 @@ public class JwtService {
              return extractAllClaims(token).get("role" , String.class);
         }
 
+        public String extractUserId(String token){
+                 return  extractAllClaims(token).get("id" , String.class);
+        }
+
       private Claims extractAllClaims(String token) {
 
         return Jwts.parser()

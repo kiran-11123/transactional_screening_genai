@@ -15,13 +15,15 @@ public class JwtPayloadDetails implements UserDetails {
     private final String email;
     private final String username;
     private final String role;
+    private final Long id;
 
     public JwtPayloadDetails(
             String email,
             String username,
-            String role) {
+            String role , Long id) {
 
         this.email = email;
+        this.id = id;
         this.username = username;
         this.role = role;
     }
@@ -37,6 +39,11 @@ public class JwtPayloadDetails implements UserDetails {
     @Override
     public String getPassword() {
         return null;
+    }
+    
+    
+    public Long getId(){
+        return id;
     }
 
     @Override

@@ -4,6 +4,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.transaction_screening.dto.ApiResponse;
 import com.example.transaction_screening.dto.Customer.CustomerRequest;
 import com.example.transaction_screening.dto.Customer.CustomerResponse;
+import com.example.transaction_screening.security.JwtPayloadDetails;
 import com.example.transaction_screening.service.customer.CustomerService;
 
 import jakarta.validation.Valid;
@@ -31,14 +34,26 @@ public class CustomerController {
     }
    
     @PostMapping
-    public ResponseEntity<ApiResponse<CustomerResponse>> createCustomer(@Valid @RequestBody CustomerRequest request){
+    public ResponseEntity<ApiResponse<CustomerResponse>> createCustomer(@Valid @RequestBody CustomerRequest request, @AuthenticationPrincipal JwtPayloadDetails userDetails){
            
         try{
              log.info(
                     "Received request to create customer with email: {}",
                     request.getEmail()
             );
-            CustomerResponse result =  customerService.createCustomer(request);
+
+    Long userId = userDetails.getId();
+
+    String email = userDetails.getEmail();
+
+  
+
+    log.info(
+            "Authenticated user: id={}, email={}",
+            userId,
+            email
+    );
+            CustomerResponse result =  customerService.createCustomer(request , userId );
             
                 ApiResponse<CustomerResponse> response = ApiResponse.<CustomerResponse>builder()
                     .status(200)

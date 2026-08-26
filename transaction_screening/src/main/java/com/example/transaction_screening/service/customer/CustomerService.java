@@ -2,6 +2,7 @@ package com.example.transaction_screening.service.customer;
 
 import java.time.LocalDateTime;
 
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import com.example.transaction_screening.entity.Customer;
 import com.example.transaction_screening.exception.customer.CustomerAlreadyExistsException;
@@ -9,7 +10,8 @@ import com.example.transaction_screening.exception.customer.CustomerNotFoundExce
 import com.example.transaction_screening.dto.Customer.CustomerRequest;
 import com.example.transaction_screening.dto.Customer.CustomerResponse;
 import com.example.transaction_screening.repository.CustomerRepository;
-
+import com.example.transaction_screening.repository.UserRepository;
+import com.example.transaction_screening.entity.User;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
@@ -19,25 +21,45 @@ public class CustomerService {
          
      
     private final CustomerRepository customerRepository;
+    private final UserRepository userRepository;
 
-    public CustomerService (CustomerRepository customerRepository){
+    public CustomerService (CustomerRepository customerRepository , UserRepository userRepository){
         this.customerRepository = customerRepository;
+        this.userRepository=userRepository;
     }
 
-    public CustomerResponse createCustomer(CustomerRequest request){
-                    log.info("Creating customer with email: {}", request.getEmail());
+    public CustomerResponse createCustomer(CustomerRequest request , Long userId){
+                     log.info(
+            "Creating customer for userId: {} with email: {}",
+            userId,
+            request.getEmail()
+    );
 
 
          try{
+
+             User user = userRepository.findById(userId)
+                .orElseThrow(() ->
+                        new UsernameNotFoundException(
+                                "User not found with id: " + userId
+                        )
+                );
+
+                  if (user.getCustomer() != null) {
+
+            throw new CustomerAlreadyExistsException(
+                    "This user already has a customer"
+            );
+        }
 
             if(customerRepository.existsByEmail(request.getEmail())){
                   throw new CustomerAlreadyExistsException("Customer already exists with email "+request.getEmail());
             }
 
-           Customer customer = Customer.builder().name(request.getName()).email(request.getEmail()).phone(request.getPhone()).createdAt(LocalDateTime.now()).build();
+           Customer customer = Customer.builder().name(request.getName()).email(request.getEmail()).phone(request.getPhone()).createdAt(LocalDateTime.now()).user(user).build();
            Customer savedCustomer = customerRepository.save(customer);
            
-                       log.info("Customer created successfully with id: {}", savedCustomer.getId());
+            log.info("Customer created successfully with id: {}", savedCustomer.getId());
 
            CustomerResponse response = CustomerResponse.builder().name(savedCustomer.getName()).email(savedCustomer.getEmail()).createdAt(savedCustomer.getCreatedAt()).id(savedCustomer.getId()).build();
 
