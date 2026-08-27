@@ -1,5 +1,6 @@
 package com.example.transaction_screening.service.kafka;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
@@ -15,7 +16,9 @@ public class TransactionProducerService {
 
     private final KafkaTemplate<String,TransactionEvent> kafkaTemplate;
 
-    public TransactionProducerService(KafkaTemplate<String,TransactionEvent> kafkaTemplate){
+    public TransactionProducerService(
+        @Qualifier("transactionKafkaTemplate")
+        KafkaTemplate<String,TransactionEvent> kafkaTemplate){
          this.kafkaTemplate=kafkaTemplate;
     }
 

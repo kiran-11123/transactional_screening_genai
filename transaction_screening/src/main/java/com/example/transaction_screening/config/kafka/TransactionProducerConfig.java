@@ -1,51 +1,53 @@
 package com.example.transaction_screening.config.kafka;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
+
 import org.springframework.kafka.support.serializer.JsonSerializer;
 
-import com.example.transaction_screening.dto.kafka.EmailRequest;
 import com.example.transaction_screening.dto.kafka.TransactionEvent;
-import java.util.*;
 
 @Configuration
 public class TransactionProducerConfig {
-    
-     @Bean
-    public ProducerFactory<String, TransactionEvent> transactionProducerFactory(){
-          
-        Map<String,Object> props = new HashMap<>();
 
-       props.put(
-            ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
-            "localhost:9092"
-        );
-          props.put(
-            ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
-            StringSerializer.class
+    @Bean(name = "transactionProducerFactory")
+    public ProducerFactory<String, TransactionEvent> transactionProducerFactory() {
+
+        Map<String, Object> config = new HashMap<>();
+
+        config.put(
+                ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
+                "localhost:9092"
         );
 
-        props.put(
-            ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
-            JsonSerializer.class
+        config.put(
+                ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
+                StringSerializer.class
         );
-        
-          return new DefaultKafkaProducerFactory<>(props);
 
+        config.put(
+                ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
+                JsonSerializer.class
+        );
+
+        return new DefaultKafkaProducerFactory<>(config);
     }
 
-    @Bean
-    public KafkaTemplate<String,TransactionEvent> transactionKafkaTemplate(){
+    @Bean(name = "transactionKafkaTemplate")
+    public KafkaTemplate<String, TransactionEvent> transactionKafkaTemplate() {
 
-       return new KafkaTemplate<>(
+        return new KafkaTemplate<>(
                 transactionProducerFactory()
         );
-
     }
-
 }

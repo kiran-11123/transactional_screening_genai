@@ -18,8 +18,11 @@ import com.example.transaction_screening.exception.transaction.TransactionNotFou
 import com.example.transaction_screening.repository.AccountRepository;
 import com.example.transaction_screening.repository.TransactionRepository;
 import com.example.transaction_screening.service.kafka.TransactionProducerService;
-
+import com.example.transaction_screening.repository.UserRepository;
+import com.example.transaction_screening.entity.User;
 import lombok.extern.slf4j.Slf4j;
+import com.example.transaction_screening.exception.user.UserNotFoundException;
+import com.example.transaction_screening.exception.address.AddressNotFoundException;
 
 @Service
 @Slf4j
@@ -28,11 +31,12 @@ public class TransactionService {
     private final TransactionRepository transactionRepository;
     private final AccountRepository accountRepository;
     private final TransactionProducerService transactionProducerService;
+    private final UserRepository userRepository;
 
     public TransactionService(
             TransactionRepository transactionRepository,
-            AccountRepository accountRepository , TransactionProducerService transactionProducerService) {
-
+            AccountRepository accountRepository , TransactionProducerService transactionProducerService , UserRepository userRepository) {
+        this.userRepository=userRepository;
         this.transactionRepository = transactionRepository;
         this.accountRepository = accountRepository;
         this.transactionProducerService = transactionProducerService;
@@ -50,6 +54,18 @@ public class TransactionService {
         );
 
         try {
+
+                User SenderUser= getUser(request.getSenderAccountId());
+                User receiverUser = getUser(request.getReceiverAccountId());
+
+                if(SenderUser.getAddress() == null ){
+
+                        throw new AddressNotFoundException("Sender Address not found..");
+        
+                }
+                if(receiverUser.getAddress() == null){
+                         throw new AddressNotFoundException("Reciever Address not found..");
+                }
 
             // Find sender account
             Account senderAccount = accountRepository
@@ -116,10 +132,10 @@ public class TransactionService {
 
             return mapToResponse(savedTransaction);
 
-        } catch (RuntimeException e) {
+        } catch (AddressNotFoundException e) {
 
             log.error(
-                    "Error while creating transaction: {}",
+                    "Address Not Found : {}",
                     e.getMessage(),
                     e
             );
@@ -138,6 +154,11 @@ public class TransactionService {
                     e
             );
         }
+    }
+
+    public User getUser(Long id){
+        User user = userRepository.findByAccountId(id);
+        return user;
     }
 
     // GET TRANSACTION BY ID
@@ -187,6 +208,8 @@ public class TransactionService {
             );
         }
     }
+
+    
 
    
     public List<TransactionResponse> getAllTransactions() {
