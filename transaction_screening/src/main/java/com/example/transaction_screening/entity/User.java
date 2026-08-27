@@ -18,6 +18,7 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import lombok.Data;
 
 @Entity
@@ -58,11 +59,15 @@ private Long id;
 
 @OneToOne(cascade = CascadeType.ALL)
 @JoinColumn(name = "account_id", unique = true)
+    @ToString.Exclude
+
 private Account account;
     
 
 @OneToOne(cascade = CascadeType.ALL)
 @JoinColumn(name = "address_id", unique = true)
+    @ToString.Exclude
+
 private Address address;
 
 }

@@ -120,7 +120,26 @@ public class TransactionService {
                     transactionRepository.save(transaction);
 
 
-            TransactionEvent rEvent = TransactionEvent.builder().createdAt(savedTransaction.getCreatedAt()).amount(savedTransaction.getAmount()).receiverAccountId(savedTransaction.getReceiverAccount().getId()).senderAccountId(savedTransaction.getSenderAccount().getId()).status(savedTransaction.getStatus().name()).transactionId(savedTransaction.getId()).build();
+            TransactionEvent rEvent = TransactionEvent.builder()
+                    .createdAt(savedTransaction.getCreatedAt())
+                    .amount(savedTransaction.getAmount())
+                    .receiverAccountId(savedTransaction.getReceiverAccount().getId())
+                    .senderAccountId(savedTransaction.getSenderAccount().getId())
+                    .status(savedTransaction.getStatus().name())
+                    .transactionId(savedTransaction.getId())
+                    .senderHouseNumber(SenderUser.getAddress().getHouseNumber())
+                    .senderStreet(SenderUser.getAddress().getStreet())
+                    .senderCity(SenderUser.getAddress().getCity())
+                    .senderState(SenderUser.getAddress().getState())
+                    .senderPostalCode(SenderUser.getAddress().getPostalCode())
+                    .senderCountry(SenderUser.getAddress().getCountry())
+                    .receiverHouseNumber(receiverUser.getAddress().getHouseNumber())
+                    .receiverStreet(receiverUser.getAddress().getStreet())
+                    .receiverCity(receiverUser.getAddress().getCity())
+                    .receiverState(receiverUser.getAddress().getState())
+                    .receiverPostalCode(receiverUser.getAddress().getPostalCode())
+                    .receiverCountry(receiverUser.getAddress().getCountry())
+                    .build();
 
            log.info("Sending Transaction event to KafkaProducer {} ", rEvent.getTransactionId());
            transactionProducerService.sendTransactionEvent(rEvent);
