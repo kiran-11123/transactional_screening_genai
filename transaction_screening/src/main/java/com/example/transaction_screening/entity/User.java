@@ -56,7 +56,7 @@ private Long id;
 
     
 
-   @OneToOne(cascade = CascadeType.ALL)
+@OneToOne(cascade = CascadeType.ALL)
 @JoinColumn(name = "account_id", unique = true)
 private Account account;
     

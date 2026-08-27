@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import com.example.transaction_screening.exception.user.InvalidCredentialsException;
 import com.example.transaction_screening.exception.user.UserAlreadyExistsException;
+import com.example.transaction_screening.exception.user.UserNotFoundException;
 import com.example.transaction_screening.exception.account.AccountAlreadyExistsException;
 import com.example.transaction_screening.exception.account.AccountNotFoundException;
 import com.example.transaction_screening.exception.transaction.InsufficientBalanceException;
@@ -37,6 +38,31 @@ public class GlobalExceptionHandler  {
                 ApiResponse.<Void>builder()
                         .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                         .message("Something went wrong")
+                        .data(null)
+                        .build();
+
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(response);
+    }
+
+    
+     @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleUserNotFound(
+            Exception e) {
+
+       
+               log.error(
+            "User Not found",
+            e.getMessage()
+    );
+
+        
+
+        ApiResponse<Void> response =
+                ApiResponse.<Void>builder()
+                        .status(HttpStatus.NOT_FOUND.value())
+                        .message("User Not found")
                         .data(null)
                         .build();
 

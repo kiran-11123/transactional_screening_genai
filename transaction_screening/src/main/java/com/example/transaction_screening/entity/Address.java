@@ -1,5 +1,8 @@
 package com.example.transaction_screening.entity;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -41,6 +44,9 @@ public class Address {
 
     @Column(nullable = false)
     private String country;
+    
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
 
     @OneToOne(mappedBy = "address")
     private User user;
