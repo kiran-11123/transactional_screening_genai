@@ -52,11 +52,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String username = jwtService.extractUsername(token);
             String email = jwtService.extractEmail(token);
             String role = jwtService.extractRole(token);
-            Long id = Long.parseLong(jwtService.extractUserId(token));
+            Long id = jwtService.extractUserId(token);
 
             log.info("Username from JWT: {}", username);
             log.info("Email from JWT: {}", email);
             log.info("Role from JWT: {}", role);
+            log.info("Id from JWT : {} " , id );
 
             if (username != null
                     && SecurityContextHolder

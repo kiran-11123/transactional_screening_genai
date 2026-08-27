@@ -5,11 +5,14 @@ import java.util.concurrent.ExecutionException;
 import java.util.*;
 import org.springframework.stereotype.Service;
 
+import com.example.transaction_screening.entity.User;
+import com.example.transaction_screening.repository.UserRepository;
 import com.example.transaction_screening.dto.Account.AccountRequest;
 import com.example.transaction_screening.dto.Account.AccountResponse;
 import com.example.transaction_screening.entity.Account;
 import com.example.transaction_screening.exception.account.AccountAlreadyExistsException;
 import com.example.transaction_screening.exception.account.AccountNotFoundException;
+import com.example.transaction_screening.exception.user.UserNotFoundException;
 import com.example.transaction_screening.repository.AccountRepository;
 
 import lombok.extern.slf4j.Slf4j;
@@ -19,21 +22,31 @@ import lombok.extern.slf4j.Slf4j;
 public class AccountService {
      
     private final AccountRepository accountRepository;
-
-    public AccountService(AccountRepository accountRepository ){
+    private final UserRepository userRepository;
+    public AccountService(AccountRepository accountRepository , UserRepository userRepository ){
         this.accountRepository = accountRepository;
+        this.userRepository = userRepository;
     }
 
 
-    public AccountResponse createAccount(AccountRequest request){
+    public AccountResponse createAccount(AccountRequest request , Long userId){
          log.info(
                 "Creating account with number: {}",
                 request.getAccountNumber()
         );
         try{
+
+                User user = findUser(userId);
+
+                if(user.getAccount()!=null){
+                         throw  new AccountAlreadyExistsException(  "Account already exists for user " + user.getUsername());
+
+
+                }
+
                
             if(accountRepository.existsByAccountNumber(request.getAccountNumber())){
-                 throw new AccountAlreadyExistsException(  "Account already exists with number: "
+                 throw new AccountAlreadyExistsException(  "AccountNumber  already exists "
                                 + request.getAccountNumber());
 
             }
@@ -42,15 +55,15 @@ public class AccountService {
             
             
             Account account = Account.builder().accountNumber(request.getAccountNumber()).active(true).balance(request.getBalance()).createdAt(LocalDateTime.now()).currency(request.getCurrency()).build();
-
-            Account savedAccount = accountRepository.save(account);
-
+        
+            user.setAccount(account);
+            User savedUserAccount = userRepository.save(user);
              log.info(
-                    "Account created successfully with id: {}",
-                    savedAccount.getId()
+                    "Account created successfully for user ",
+                    savedUserAccount.getUsername()
             );
 
-            return mapToResponse(savedAccount);
+            return mapToResponse(savedUserAccount.getAccount());
             
         }
         catch(AccountAlreadyExistsException e){
@@ -86,26 +99,15 @@ public class AccountService {
 
         try {
 
-            Account account =
-                    accountRepository.findById(id)
-                            .orElseThrow(() ->
-                                    new AccountNotFoundException(
-                                            "Account with id: "
-                                                    + id
-                                                    + " not found"
-                                    )
-                            );
+              
+           User user  = findUser(id);
 
-            return mapToResponse(account);
+           if(user.getAccount()==null){
+                throw new AccountNotFoundException(
+                     "Account not found for user id: " + id);
+           }
 
-        } catch (AccountNotFoundException e) {
-
-            log.error(
-                    "Account not found: {}",
-                    e.getMessage()
-            );
-
-            throw e;
+            return mapToResponse(user.getAccount());
 
         } catch (Exception e) {
 
@@ -122,6 +124,10 @@ public class AccountService {
         }
     }
 
+   private User findUser(Long userId) {
+        return userRepository.findById(userId).orElseThrow(() ->
+                new UserNotFoundException("User not found with id: " + userId));
+    }
 
      
 

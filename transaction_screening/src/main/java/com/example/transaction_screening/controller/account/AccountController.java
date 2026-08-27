@@ -62,7 +62,7 @@ request.setAccountNumber(accountNumber);
 if(request.getAccountNumber()==null){
      throw new RuntimeException("Account number should not be empty");
 }
-            AccountResponse result = accountService.createAccount(request);
+            AccountResponse result = accountService.createAccount(request , userId);
 
             ApiResponse<AccountResponse> response =  ApiResponse.<AccountResponse>builder().status(HttpStatus.CREATED.value())
                             .message("Account created successfully")
@@ -85,18 +85,18 @@ if(request.getAccountNumber()==null){
 
     
 
-         @GetMapping("/{id}")
-        public ResponseEntity<ApiResponse<AccountResponse>> getAccountById(@PathVariable Long id){
+      @GetMapping
+        public ResponseEntity<ApiResponse<AccountResponse>> getAccountById( @AuthenticationPrincipal JwtPayloadDetails userDetails){
              
-                    try {
+        try {
 
             log.info(
                     "Received request to fetch account with id: {}",
-                    id
+                    userDetails.getId()
             );
 
             AccountResponse result =
-                    accountService.getAccountById(id);
+                    accountService.getAccountById(userDetails.getId());
 
             ApiResponse<AccountResponse> response =
                     ApiResponse.<AccountResponse>builder()
@@ -110,9 +110,8 @@ if(request.getAccountNumber()==null){
         } catch (Exception e) {
 
             log.error(
-                    "Error in getAccountById controller for id: {}",
-                    id,
-                    e
+                    "Error in getting users Account" , userDetails.getUsername()
+                   
             );
 
             throw e;

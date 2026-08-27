@@ -91,6 +91,66 @@ public class AddressService {
            
     }
 
+    public AddressResponse getAddress(Long userId) {
+        User user = findUser(userId);
+
+        if (user.getAddress() == null) {
+            throw new RuntimeException("Address not found for user");
+        }
+
+        return mapToResponse(user);
+    }
+
+    public AddressResponse updateAddress(AddressRequest request, Long userId) {
+        User user = findUser(userId);
+        Address address = user.getAddress();
+
+        if (address == null) {
+            throw new RuntimeException("Address not found for user");
+        }
+
+        address.setHouseNumber(request.getHouseNumber());
+        address.setStreet(request.getStreet());
+        address.setCity(request.getCity());
+        address.setState(request.getState());
+        address.setPostalCode(request.getPostalCode());
+        address.setCountry(request.getCountry());
+
+        return mapToResponse(userRepository.save(user));
+    }
+
+    public void deleteAddress(Long userId) {
+        User user = findUser(userId);
+        Address address = user.getAddress();
+
+        if (address == null) {
+            throw new RuntimeException("Address not found for user");
+        }
+
+        user.setAddress(null);
+        userRepository.save(user);
+        addressRepository.delete(address);
+    }
+
+    private User findUser(Long userId) {
+        return userRepository.findById(userId).orElseThrow(() ->
+                new UserNotFoundException("User not found with id: " + userId));
+    }
+
+    private AddressResponse mapToResponse(User user) {
+        Address address = user.getAddress();
+
+        return AddressResponse.builder()
+                .username(user.getUsername())
+                .houseNumber(address.getHouseNumber())
+                .street(address.getStreet())
+                .city(address.getCity())
+                .state(address.getState())
+                .postalCode(address.getPostalCode())
+                .country(address.getCountry())
+                .build();
+    }
+
 }
 
 
