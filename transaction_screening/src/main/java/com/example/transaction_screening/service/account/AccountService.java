@@ -109,6 +109,26 @@ public class AccountService {
 
             return mapToResponse(user.getAccount());
 
+        } catch (AccountNotFoundException e) {
+
+            log.warn(
+                "Account not found for user {}: {}",
+                id,
+                e.getMessage()
+            );
+
+            throw e;
+
+        } catch (UserNotFoundException e) {
+
+            log.warn(
+                "User not found while fetching account {}: {}",
+                id,
+                e.getMessage()
+            );
+
+            throw e;
+
         } catch (Exception e) {
 
             log.error(

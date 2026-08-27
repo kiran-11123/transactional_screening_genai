@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import com.example.transaction_screening.exception.transaction.TransactionNotFound;
 import com.example.transaction_screening.dto.ApiResponse;
+import com.example.transaction_screening.exception.address.AddressNotFoundException;
+import com.example.transaction_screening.exception.address.AddressAlreadyExistsException;
 
 @RestControllerAdvice
 @Slf4j
@@ -70,6 +72,30 @@ public class GlobalExceptionHandler  {
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(response);
     }
+
+     @ExceptionHandler(AddressNotFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleAddressNotFound(
+            AddressNotFoundException e) {
+
+       
+               log.error(
+            "Address Not found",
+            e.getMessage()
+    );
+
+        
+
+        ApiResponse<Void> response =
+                ApiResponse.<Void>builder()
+                        .status(HttpStatus.NOT_FOUND.value())
+                        .message(e.getMessage())
+                        .data(null)
+                        .build();
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(response);
+    }
     
     @ExceptionHandler(AccountNotFoundException.class)
     public ResponseEntity<ApiResponse<Void>> handleAccountNotFound(Exception e){
@@ -98,6 +124,27 @@ public ResponseEntity<ApiResponse<Void>> handleAccountAlreadyExists(
 
     log.error(
             "Account already exists: {}",
+            e.getMessage()
+    );
+
+    ApiResponse<Void> response =
+            ApiResponse.<Void>builder()
+                    .status(HttpStatus.CONFLICT.value())
+                    .message(e.getMessage())
+                    .data(null)
+                    .build();
+
+    return ResponseEntity
+            .status(HttpStatus.CONFLICT)
+            .body(response);
+}
+
+@ExceptionHandler(AddressAlreadyExistsException.class)
+public ResponseEntity<ApiResponse<Void>> handleAddressAlreadyExists(
+        AddressAlreadyExistsException e) {
+
+    log.error(
+            "Address already exists: {}",
             e.getMessage()
     );
 
